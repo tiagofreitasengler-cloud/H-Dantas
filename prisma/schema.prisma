@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum AppointmentStatus {
+  AGENDADO
+  CONFIRMADO
+  CANCELADO
+  CONCLUIDO
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  phone        String
+  passwordHash String
+  role         Role          @default(CLIENT)
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Service {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String        @default("")
+  priceCents   Int
+  durationMin  Int
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Appointment {
+  id         Int               @id @default(autoincrement())
+  userId     Int
+  serviceId  Int
+  barberName String            @default("Pedro Henrique Dantas")
+  date       String
+  time       String
+  valueCents Int
+  status     AppointmentStatus @default(AGENDADO)
+  createdAt  DateTime          @default(now())
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    Service           @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@unique([date, time])
+  @@index([userId, date])
+}
+
+model Availability {
+  id        Int     @id @default(autoincrement())
+  dayOfWeek Int
+  time      String
+  active    Boolean @default(true)
+
+  @@unique([dayOfWeek, time])
+}
+
+model BlockedDate {
+  id        Int      @id @default(autoincrement())
+  date      String   @unique
+  createdAt DateTime @default(now())
+}

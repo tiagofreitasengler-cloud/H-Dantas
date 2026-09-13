@@ -1,0 +1,18 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { ADDRESS, BARBER, PHONE, WHATSAPP, money } from "@/lib/format";
+
+export default async function Home() {
+  const services = await prisma.service.findMany({ where: { active: true }, orderBy: { id: "asc" } });
+  const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Olá, H'Dantas! Gostaria de falar sobre um atendimento.")}`;
+  return <>
+    <main>
+      <section className="hero"><div className="container"><div className="eyebrow">Barbearia premium</div><h1>H'Dantas</h1><p>Estilo, precisão e personalidade em cada corte e barba. Agende seu horário com praticidade e deixe o atendimento por conta do barbeiro responsável, {BARBER}.</p><div className="actions"><Link className="btn" href="/agendar">AGENDAR HORÁRIO</Link><Link className="btn alt" href="/login">ENTRAR / CADASTRAR</Link></div></div></section>
+      <section className="section" id="servicos"><div className="container"><div className="sectionhead"><div><div className="eyebrow">Serviços</div><h2>Nossos serviços</h2></div><p className="muted">Escolha seu atendimento e consulte a agenda.</p></div><div className="grid3">{services.map(s=><article className="card" key={s.id}><div className="gold">H'Dantas</div><h3>{s.name}</h3><p className="muted">{s.description}</p><div className="price">{money(s.priceCents)}</div><div className="small">Duração configurável · {s.durationMin} min</div><div className="actions"><Link href={`/agendar?service=${s.id}`} className="btn">Agendar</Link></div></article>)}</div></div></section>
+      <section className="section" id="sobre"><div className="container two"><div className="feature"><div className="eyebrow">Sobre a H'Dantas</div><h2>Clássico por essência. Moderno por escolha.</h2><p className="muted">A H'Dantas foi pensada para oferecer uma experiência de barbearia elegante, simples e organizada. O sistema online facilita cadastro, consulta de horários, agendamento e acompanhamento dos atendimentos.</p></div><div className="feature"><div className="eyebrow">Nosso barbeiro</div><h2>{BARBER}</h2><p className="muted">Barbeiro responsável pelos atendimentos da H'Dantas.</p><div className="notice"><strong>Atendimento</strong><br/><span className="muted">Agendamento online com confirmação de disponibilidade.</span></div></div></div></section>
+      <section className="section"><div className="container"><div className="sectionhead"><div><div className="eyebrow">Localização</div><h2>Onde estamos</h2></div><div className="muted">{ADDRESS}</div></div><div className="map"><iframe title="Localização H'Dantas" src={`https://www.google.com/maps?q=${encodeURIComponent(ADDRESS)}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div></div></section>
+      <section className="section" id="contato"><div className="container"><div className="card contactbox"><div><div className="eyebrow">Contato</div><h2>Fale com a H'Dantas</h2><p className="muted">{PHONE}</p></div><a className="btn" href={wa} target="_blank" rel="noreferrer">Falar pelo WhatsApp</a></div></div></section>
+    </main>
+    <footer className="footer"><div className="container footergrid"><div><div className="brand">H'<span>Dantas</span></div><p>Barbearia premium.</p></div><div><strong>Serviços</strong><p>Corte de cabelo<br/>Barba<br/>Corte + Barba</p></div><div><strong>Contato</strong><p>{ADDRESS}<br/>{PHONE}<br/><Link href="/agendar">Agendar horário</Link></p></div></div><div className="container small" style={{marginTop:30}}>© {new Date().getFullYear()} H'Dantas. Todos os direitos reservados.</div></footer>
+  </>;
+}
